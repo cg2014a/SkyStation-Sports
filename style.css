@@ -24,5 +24,6 @@
 @media(max-width:760px){.conference-grid{grid-template-columns:1fr;gap:10px}.conference-group>h3{margin-top:4px}.conference-group .section{margin-top:6px}}
 .division-toggle[aria-expanded=true] + .cards{display:grid;visibility:visible;opacity:1}
 @media(max-width:760px){main{padding-top:calc(20px + env(safe-area-inset-top))}}
+@media(max-width:760px){body{padding-top:env(safe-area-inset-top)}main{padding-top:20px}}
 .division-toggle + .cards{gap:8px}.division-toggle + .cards .fav-card{padding:7px 12px}.division-toggle + .cards .team-row{min-height:52px;padding:2px 0}.division-toggle + .cards .fav-toggle{padding:7px 10px}
 @media(max-width:760px){.division-toggle + .cards .fav-card{padding:5px 10px}.division-toggle + .cards .team-row{min-height:48px}}
