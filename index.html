@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#081526"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icons/icon.svg">
+  <link rel="stylesheet" href="style.css"><title>SkyStation Sports</title>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="rail"><a class="brand" href="#home"><span class="brand-mark">S</span><span>SkyStation <b>Sports</b></span></a><nav class="primary-nav" aria-label="Primary navigation">
+      <button data-view="home" class="active">⌂ <span>Home</span></button><button data-view="scores">▣ <span>Scores</span></button><button data-view="standings">☷ <span>Standings</span></button><button data-view="teams">♟ <span>Teams</span></button><button data-view="more">••• <span>More</span></button>
+    </nav><p class="rail-foot">Phase 1 · v0.1.0</p></aside>
+    <main id="main" tabindex="-1"><div class="topline"><div><div class="eyebrow">SkyStation Sports</div><h1>Home</h1><div class="muted">Loading your dashboard…</div></div></div><section class="section"><div class="section-head"><h2>My Teams</h2></div><div class="card favorites-empty"><b>No favorite teams yet</b><p class="muted">Choose teams once the dashboard finishes loading.</p></div></section><section class="section"><div class="section-head"><h2>Today's Games</h2></div><div class="empty">Loading verified game data…</div></section></main>
+    <nav class="bottom-nav" aria-label="Primary navigation"><button data-view="home" class="active">⌂<span>Home</span></button><button data-view="scores">▣<span>Scores</span></button><button data-view="standings">☷<span>Standings</span></button><button data-view="teams">♟<span>Teams</span></button><button data-view="more">•••<span>More</span></button></nav>
+  </div><dialog id="dialog"></dialog><script type="module" src="app.js"></script><script type="module" src="dev-pwa.js"></script>
+</body></html>
