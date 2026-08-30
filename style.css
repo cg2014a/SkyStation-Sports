@@ -22,5 +22,7 @@
 .standings table .team-col{width:130px}.standings th:first-child,.standings td:first-child{overflow:visible;text-overflow:clip;white-space:normal;overflow-wrap:anywhere;word-break:normal}.mlb-standings th:first-child,.mlb-standings td:first-child,.nfl-standings th:first-child,.nfl-standings td:first-child{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}
 .conference-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}.conference-group>h3{margin:0 0 8px;font-size:14px;color:var(--muted)}.conference-group .section{margin-top:8px}.conference-group .division-toggle{padding:10px 12px}
 @media(max-width:760px){.conference-grid{grid-template-columns:1fr;gap:10px}.conference-group>h3{margin-top:4px}.conference-group .section{margin-top:6px}}
+.division-toggle[aria-expanded=true] + .cards{display:grid;visibility:visible;opacity:1}
+@media(max-width:760px){main{padding-top:calc(20px + env(safe-area-inset-top))}}
 .division-toggle + .cards{gap:8px}.division-toggle + .cards .fav-card{padding:7px 12px}.division-toggle + .cards .team-row{min-height:52px;padding:2px 0}.division-toggle + .cards .fav-toggle{padding:7px 10px}
 @media(max-width:760px){.division-toggle + .cards .fav-card{padding:5px 10px}.division-toggle + .cards .team-row{min-height:48px}}
