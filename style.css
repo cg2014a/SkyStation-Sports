@@ -28,3 +28,5 @@
 @media(max-width:760px){body{padding-top:env(safe-area-inset-top)}main{padding-top:20px}}
 .division-toggle + .cards{gap:8px}.division-toggle + .cards .fav-card{padding:7px 12px}.division-toggle + .cards .team-row{min-height:52px;padding:2px 0}.division-toggle + .cards .fav-toggle{padding:7px 10px}
 @media(max-width:760px){.division-toggle + .cards .fav-card{padding:5px 10px}.division-toggle + .cards .team-row{min-height:48px}}
+button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none;-webkit-tap-highlight-color:transparent}
+main:focus{outline:none}
