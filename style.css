@@ -30,3 +30,4 @@
 @media(max-width:760px){.division-toggle + .cards .fav-card{padding:5px 10px}.division-toggle + .cards .team-row{min-height:48px}}
 button:focus:not(:focus-visible),a:focus:not(:focus-visible){outline:none;-webkit-tap-highlight-color:transparent}
 main:focus{outline:none}
+@media(max-width:760px){.dialog{max-height:calc(100dvh - env(safe-area-inset-top) - 16px)}.dialog-inner{max-height:inherit;overflow-y:auto}.mlb-inning-group{margin:4px 0}.mlb-inning-group summary{min-height:48px;padding:10px 12px;display:flex;align-items:center}.mlb-play-list{padding:0 12px 6px}}
