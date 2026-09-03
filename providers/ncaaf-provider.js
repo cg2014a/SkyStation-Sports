@@ -1,0 +1,15 @@
+import{endpoint,normalizeEspnGame,isoDate}from'./provider-utils.js';
+
+const workerBase=typeof window!=='undefined'&&['localhost','127.0.0.1'].includes(window.location.hostname)?'http://127.0.0.1:8787':'https://skystation-sports-gateway.cgarrett4.workers.dev';
+
+const normalize=event=>{
+  const game=normalizeEspnGame(event,'NCAAF'),competition=event.competitions?.[0],competitors=competition?.competitors||[];
+  const enrich=team=>{
+    if(!team)return null;
+    const source=competitors.find(entry=>entry.team?.id===team.providerId);
+    return {...team,ranking:source?.curatedRank?.current??source?.rank??null,conference:source?.team?.conference?.name??source?.conference?.name??source?.team?.conferenceId??source?.conferenceId??null};
+  };
+  return {...game,homeTeam:enrich(game.homeTeam),awayTeam:enrich(game.awayTeam)};
+};
+
+export default{league:'NCAAF',games:async date=>{const data=await endpoint(`${workerBase}/api/ncaaf/scores?date=${isoDate(date).replaceAll('-','')}`);return(data.events||[]).map(normalize)},standings:async()=>({}),teams:async()=>[]};

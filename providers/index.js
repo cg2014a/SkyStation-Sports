@@ -1,1 +1,1 @@
-import nfl from './nfl-provider.js';import mlb from './mlb-provider.js';import nhl from './nhl-provider.js';export const providers={NFL:nfl,MLB:mlb,NHL:nhl};export const enabled=()=>Object.entries(providers);
+import nfl from './nfl-provider.js';import mlb from './mlb-provider.js';import nhl from './nhl-provider.js';import ncaaf from './ncaaf-provider.js';export const providers={NFL:nfl,MLB:mlb,NHL:nhl,NCAAF:ncaaf};export const enabled=()=>Object.entries(providers);
