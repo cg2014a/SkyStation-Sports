@@ -1,0 +1,4 @@
+import{endpoint,normalizeEspnGame,isoDate}from'./provider-utils.js';
+const workerBase=typeof window!=='undefined'&&['localhost','127.0.0.1'].includes(window.location.hostname)?'http://127.0.0.1:8787':'https://skystation-sports-gateway.cgarrett4.workers.dev';
+const normalize=event=>{const game=normalizeEspnGame(event,'NCAAM'),competitors=event.competitions?.[0]?.competitors||[];const enrich=team=>{const source=competitors.find(entry=>entry.team?.id===team?.providerId);return team?{...team,league:'NCAAM',ranking:source?.curatedRank?.current??source?.rank??null}:null};return{...game,homeTeam:enrich(game.homeTeam),awayTeam:enrich(game.awayTeam)}};
+export default{league:'NCAAM',games:async date=>{const data=await endpoint(`${workerBase}/api/ncaam/scores?date=${isoDate(date).replaceAll('-','')}`);return(data.events||[]).map(normalize)}};
