@@ -14,4 +14,4 @@ const normalize=event=>{
 
 const mapTeams=data=>(data.teams||[]).map(team=>({id:`NCAAF:${team.id}`,providerId:team.id,league:'NCAAF',name:team.displayName||team.name,abbreviation:team.abbreviation,logo:team.logo||null,conference:team.conference||null}));
 
-export default{league:'NCAAF',games:async date=>{const data=await endpoint(`${workerBase}/api/ncaaf/scores?date=${isoDate(date).replaceAll('-','')}`);return(Array.isArray(data)?data:data.events||[]).map(normalize)},standings:async()=>({}),teams:async()=>mapTeams(await endpoint(`${workerBase}/api/ncaaf/teams`))};
+export default{league:'NCAAF',games:async date=>{const data=await endpoint(`${workerBase}/api/ncaaf/scores?date=${isoDate(date).replaceAll('-','')}`);return(Array.isArray(data)?data:data.events||[]).map(normalize)},standings:async()=>endpoint(`${workerBase}/api/ncaaf/standings`),teams:async()=>mapTeams(await endpoint(`${workerBase}/api/ncaaf/teams`))};
