@@ -19,12 +19,14 @@ const sports = [
   ['BOYS_TRACK_FIELD', "Boys' Track & Field"]
 ];
 const teams = schools.flatMap(([schoolKey, name, providerId]) => sports.map(([sportKey, sport]) => ({
-  id: `OLATHE:${schoolKey}:${sportKey}`,
+  id: `OLATHE:${schoolKey}:${sportKey}:VARSITY`,
   providerId,
   league: 'OLATHE',
   schoolKey,
   sportKey,
   sport,
+  levelKey: 'VARSITY',
+  level: 'Varsity',
   name,
   abbreviation: schoolKey,
   logo: null
