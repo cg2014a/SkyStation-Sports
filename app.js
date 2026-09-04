@@ -1,5 +1,5 @@
 await window.skyStartupReady;
-import{providers}from'./providers/index.js';const APP_VERSION='v1.0.79';const $=s=>document.querySelector(s),or=(x,f)=>x==null?f:x,safe=x=>String(or(x,'')).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),views=['home','scores','standings','teams','more'];
+import{providers}from'./providers/index.js';const APP_VERSION='v1.0.80';const $=s=>document.querySelector(s),or=(x,f)=>x==null?f:x,safe=x=>String(or(x,'')).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),views=['home','scores','standings','teams','more'];
 const settings=JSON.parse(localStorage.getItem('sky-settings')||'{"enabled":{"NFL":true,"MLB":true,"NHL":true}}'),todayKey=()=>{const p=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),v=Object.fromEntries(p.map(x=>[x.type,x.value]));return`${v.year}-${v.month}-${v.day}`},st={view:views.includes(location.hash.slice(1))?location.hash.slice(1):'home',filter:'All',standingsFilter:'My Teams',nflStandingsMode:'divisions',mlbStandingsMode:'divisions',ncaafStandingsMode:'standings',ncaamStandingsMode:'standings',selectedDate:todayKey(),games:[],teams:{},standings:{},errors:{},favorites:JSON.parse(localStorage.getItem('sky-favorites')||'[]'),nextGames:{},nextGameErrors:{},loading:false,updated:null};
 settings.enabled.NCAAF??=true;settings.enabled.NCAAM??=true;settings.enabled.OLATHE??=true;
 const migratedFavorites=st.favorites.map(team=>team?.id==='OLATHE:ONW:FOOTBALL'?{...team,id:'OLATHE:ONW:FOOTBALL:VARSITY',levelKey:'VARSITY',level:'Varsity'}:team);if(migratedFavorites.some((team,index)=>team.id!==st.favorites[index]?.id)){st.favorites=migratedFavorites;localStorage.setItem('sky-favorites',JSON.stringify(st.favorites))}
@@ -146,7 +146,7 @@ loadNextFavoriteGames=async()=>{
   if(!olatheFavorites.length)return;
   try{
     const host=['localhost','127.0.0.1'].includes(location.hostname)?'http://127.0.0.1:8787':'https://skystation-sports-gateway.cgarrett4.workers.dev';
-    const raw=await endpoint(`${host}/api/olathe/scores?date=${todayKey().replaceAll('-','')}`),games=(raw.games||[]).map(game=>({...game,sport:game.sport||'Football'}));
+    const dateKey=todayKey().replaceAll('-',''),payloads=await Promise.all([endpoint(`${host}/api/olathe/scores?date=${dateKey}`),endpoint(`${host}/api/olathe/scores?date=${dateKey}&sport=soccer`),endpoint(`${host}/api/olathe/scores?date=${dateKey}&sport=basketball`)]),games=payloads.flatMap(raw=>raw.games||[]).map(game=>({...game,sportName:game.sportName||(game.sport==='BASKETBALL'?'Basketball':game.sport==='SOCCER'?'Soccer':'Football')}));
     const today=todayKey(),pending=new Set(olatheFavorites.map(team=>olatheFavoriteKey(team.id)));
     const candidates=games.filter(game=>String(game.status||'').toLowerCase()==='scheduled'&&String(game.date||'').slice(0,10)>=today).sort((a,b)=>(Date.parse(a.date)||Infinity)-(Date.parse(b.date)||Infinity));
     for(const game of candidates){
