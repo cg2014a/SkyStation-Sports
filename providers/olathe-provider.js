@@ -10,14 +10,18 @@ export default {
   league: 'OLATHE',
   games: async date => {
     const current = isoDate(date).replaceAll('-', '');
+    const dates = [isoDate(date)];
     const requests = [endpoint(`${workerBase}/api/olathe/scores?date=${current}`)];
     if (typeof window !== 'undefined' && window.location.hash === '#home') {
       const previous = new Date(date);
       previous.setUTCDate(previous.getUTCDate() - 1);
+      dates.push(isoDate(previous));
       requests.push(endpoint(`${workerBase}/api/olathe/scores?date=${isoDate(previous).replaceAll('-', '')}`));
     }
     const responses = await Promise.all(requests);
-    return responses.flatMap(data => data.games || []);
+    const allowedDates = new Set(dates);
+    const games = responses.flatMap(data => data.games || []).filter(game => allowedDates.has(String(game.date || '').slice(0, 10)));
+    return games.filter((game, index, all) => game.id && all.findIndex(item => item.id === game.id) === index);
   },
   standings: async () => [],
   teams: async () => [school]
