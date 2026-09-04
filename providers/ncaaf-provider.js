@@ -12,4 +12,6 @@ const normalize=event=>{
   return {...game,homeTeam:enrich(game.homeTeam),awayTeam:enrich(game.awayTeam)};
 };
 
-export default{league:'NCAAF',games:async date=>{const data=await endpoint(`${workerBase}/api/ncaaf/scores?date=${isoDate(date).replaceAll('-','')}`);return(data.events||[]).map(normalize)},standings:async()=>({}),teams:async()=>[]};
+const mapTeams=data=>(data.teams||[]).map(team=>({id:`NCAAF:${team.id}`,providerId:team.id,league:'NCAAF',name:team.displayName||team.name,abbreviation:team.abbreviation,logo:team.logo||null}));
+
+export default{league:'NCAAF',games:async date=>{const data=await endpoint(`${workerBase}/api/ncaaf/scores?date=${isoDate(date).replaceAll('-','')}`);return(data.events||[]).map(normalize)},standings:async()=>({}),teams:async()=>mapTeams(await endpoint(`${workerBase}/api/ncaaf/teams`))};
