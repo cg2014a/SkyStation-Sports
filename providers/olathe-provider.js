@@ -18,19 +18,21 @@ const sports = [
   ['BOYS_SOCCER', "Boys' Soccer"],
   ['BOYS_TRACK_FIELD', "Boys' Track & Field"]
 ];
-const teams = schools.flatMap(([schoolKey, name, providerId]) => sports.map(([sportKey, sport]) => ({
-  id: `OLATHE:${schoolKey}:${sportKey}:VARSITY`,
+const levels = [['VARSITY', 'Varsity'], ['JV', 'JV'], ['B_TEAM', 'B Team'], ['C_TEAM', 'C Team'], ['FRESHMAN', 'Freshman']];
+const teams = schools.flatMap(([schoolKey, name, providerId]) => sports.flatMap(([sportKey, sport]) => levels.map(([levelKey, level]) => ({
+  id: `OLATHE:${schoolKey}:${sportKey}:${levelKey}`,
   providerId,
   league: 'OLATHE',
   schoolKey,
   sportKey,
   sport,
-  levelKey: 'VARSITY',
-  level: 'Varsity',
+  levelKey,
+  level,
+  scoresAvailable: schoolKey === 'ONW' && sportKey === 'FOOTBALL' && levelKey === 'VARSITY',
   name,
   abbreviation: schoolKey,
   logo: null
-})));
+}))));
 
 export default {
   league: 'OLATHE',
@@ -47,7 +49,10 @@ export default {
     const responses = await Promise.all(requests);
     const allowedDates = new Set(dates);
     const games = responses.flatMap(data => data.games || []).filter(game => allowedDates.has(String(game.date || '').slice(0, 10)));
-    return games.filter((game, index, all) => game.id && all.findIndex(item => item.id === game.id) === index);
+    return games.map(game => {
+      const mapTeam = team => team?.id === 'OLATHE:ONW:FOOTBALL' ? { ...team, id: 'OLATHE:ONW:FOOTBALL:VARSITY' } : team;
+      return { ...game, homeTeam: mapTeam(game.homeTeam), awayTeam: mapTeam(game.awayTeam), school: mapTeam(game.school) };
+    }).filter((game, index, all) => game.id && all.findIndex(item => item.id === game.id) === index);
   },
   standings: async () => [],
   teams: async () => teams
