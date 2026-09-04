@@ -1,4 +1,4 @@
-const VERSION = 'skystation-sports-v1.0.60';
+const VERSION = 'skystation-sports-v1.0.61';
 const ROOT = new URL('./', self.registration.scope).href;
 const SHELL = [ROOT, './index.html', './style.css', './app.js', './dev-pwa.js', './manifest.webmanifest', './icons/icon.svg'].map(path => new URL(path, self.registration.scope).href);
 const SHELL_URLS = new Set(SHELL);
