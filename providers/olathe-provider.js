@@ -39,16 +39,16 @@ export default {
   games: async date => {
     const current = isoDate(date).replaceAll('-', '');
     const dates = [isoDate(date)];
-    const requests = [endpoint(`${workerBase}/api/olathe/scores?date=${current}`), endpoint(`${workerBase}/api/olathe/scores?date=${current}&sport=soccer`), endpoint(`${workerBase}/api/olathe/scores?date=${current}&sport=basketball`)];
+    const requests = [endpoint(`${workerBase}/api/olathe/scores?date=${current}`), endpoint(`${workerBase}/api/olathe/scores?date=${current}&sport=soccer`), endpoint(`${workerBase}/api/olathe/scores?date=${current}&sport=basketball`), endpoint(`${workerBase}/api/olathe/cross-country`)];
     if (typeof window !== 'undefined' && window.location.hash === '#home') {
       const previous = new Date(date);
       previous.setUTCDate(previous.getUTCDate() - 1);
       dates.push(isoDate(previous));
-      requests.push(endpoint(`${workerBase}/api/olathe/scores?date=${isoDate(previous).replaceAll('-', '')}`), endpoint(`${workerBase}/api/olathe/scores?date=${isoDate(previous).replaceAll('-', '')}&sport=soccer`), endpoint(`${workerBase}/api/olathe/scores?date=${isoDate(previous).replaceAll('-', '')}&sport=basketball`));
+      requests.push(endpoint(`${workerBase}/api/olathe/scores?date=${isoDate(previous).replaceAll('-', '')}`), endpoint(`${workerBase}/api/olathe/scores?date=${isoDate(previous).replaceAll('-', '')}&sport=soccer`), endpoint(`${workerBase}/api/olathe/scores?date=${isoDate(previous).replaceAll('-', '')}&sport=basketball`), endpoint(`${workerBase}/api/olathe/cross-country`));
     }
-    const responses = await Promise.all(requests);
+    const responses = (await Promise.allSettled(requests)).filter(result => result.status === 'fulfilled').map(result => result.value);
     const allowedDates = new Set(dates);
-    const games = responses.flatMap(data => data.games || []).filter(game => allowedDates.has(String(game.date || '').slice(0, 10)));
+    const games = responses.flatMap(data => [...(data.games || []), ...(data.events || [])]).filter(game => allowedDates.has(String(game.date || '').slice(0, 10)));
     return games.map(game => {
       const mapTeam = team => team?.id === 'OLATHE:ONW:FOOTBALL' ? { ...team, id: 'OLATHE:ONW:FOOTBALL:VARSITY' } : team;
       return { ...game, sport: game.sport || 'FOOTBALL', sportName: game.sportName || (game.sport === 'SOCCER' ? 'Soccer' : game.sport === 'BASKETBALL' ? 'Basketball' : 'Football'), homeTeam: mapTeam(game.homeTeam), awayTeam: mapTeam(game.awayTeam), school: mapTeam(game.school) };
