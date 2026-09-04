@@ -4,7 +4,31 @@ const workerBase = typeof window !== 'undefined' && ['localhost', '127.0.0.1'].i
   ? 'http://127.0.0.1:8787'
   : 'https://skystation-sports-gateway.cgarrett4.workers.dev';
 
-const school = { id: 'OLATHE:ONW:FOOTBALL', providerId: '1240', league: 'OLATHE', name: 'Olathe Northwest High School', abbreviation: 'ONW', logo: null };
+const schools = [
+  ['OE', 'Olathe East High School', '1181'],
+  ['ON', 'Olathe North High School', '677'],
+  ['ONW', 'Olathe Northwest High School', '1240'],
+  ['OS', 'Olathe South High School', '679'],
+  ['OW', 'Olathe West High School', '6770']
+];
+const sports = [
+  ['FOOTBALL', 'Football'],
+  ['BOYS_BASKETBALL', "Boys' Basketball"],
+  ['BOYS_CROSS_COUNTRY', "Boys' Cross-Country"],
+  ['BOYS_SOCCER', "Boys' Soccer"],
+  ['BOYS_TRACK_FIELD', "Boys' Track & Field"]
+];
+const teams = schools.flatMap(([schoolKey, name, providerId]) => sports.map(([sportKey, sport]) => ({
+  id: `OLATHE:${schoolKey}:${sportKey}`,
+  providerId,
+  league: 'OLATHE',
+  schoolKey,
+  sportKey,
+  sport,
+  name,
+  abbreviation: schoolKey,
+  logo: null
+})));
 
 export default {
   league: 'OLATHE',
@@ -24,5 +48,5 @@ export default {
     return games.filter((game, index, all) => game.id && all.findIndex(item => item.id === game.id) === index);
   },
   standings: async () => [],
-  teams: async () => [school]
+  teams: async () => teams
 };
