@@ -1,5 +1,5 @@
 await window.skyStartupReady;
-import{providers}from'./providers/index.js';const APP_VERSION='v1.0.75';const $=s=>document.querySelector(s),or=(x,f)=>x==null?f:x,safe=x=>String(or(x,'')).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),views=['home','scores','standings','teams','more'];
+import{providers}from'./providers/index.js';const APP_VERSION='v1.0.76';const $=s=>document.querySelector(s),or=(x,f)=>x==null?f:x,safe=x=>String(or(x,'')).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),views=['home','scores','standings','teams','more'];
 const settings=JSON.parse(localStorage.getItem('sky-settings')||'{"enabled":{"NFL":true,"MLB":true,"NHL":true}}'),todayKey=()=>{const p=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date()),v=Object.fromEntries(p.map(x=>[x.type,x.value]));return`${v.year}-${v.month}-${v.day}`},st={view:views.includes(location.hash.slice(1))?location.hash.slice(1):'home',filter:'All',standingsFilter:'My Teams',nflStandingsMode:'divisions',mlbStandingsMode:'divisions',ncaafStandingsMode:'standings',ncaamStandingsMode:'standings',selectedDate:todayKey(),games:[],teams:{},standings:{},errors:{},favorites:JSON.parse(localStorage.getItem('sky-favorites')||'[]'),nextGames:{},nextGameErrors:{},loading:false,updated:null};
 settings.enabled.NCAAF??=true;settings.enabled.NCAAM??=true;settings.enabled.OLATHE??=true;
 const migratedFavorites=st.favorites.map(team=>team?.id==='OLATHE:ONW:FOOTBALL'?{...team,id:'OLATHE:ONW:FOOTBALL:VARSITY',levelKey:'VARSITY',level:'Varsity'}:team);if(migratedFavorites.some((team,index)=>team.id!==st.favorites[index]?.id)){st.favorites=migratedFavorites;localStorage.setItem('sky-favorites',JSON.stringify(st.favorites))}
@@ -136,3 +136,35 @@ function ncaamBoxScoreForTeam(g,side){const teams=(g.boxScorePlayers||[]).filter
 document.addEventListener('click',e=>{const b=e.target.closest('[data-ncaam-playoff],[data-ncaam-standings]');if(!b)return;st.ncaamStandingsMode=b.dataset.ncaamPlayoff?'playoffs':'standings';render()});
 const scoresWithLeagueOnly=scores;scores=()=>{const d=new Date(`${st.selectedDate}T12:00:00Z`),label=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',month:'short',day:'numeric',year:'numeric'}).format(d).replace('Sep','Sept'),chosen=st.filter!=='All',shown=chosen?st.games.filter(g=>g.league===st.filter):[],buttons=['NFL','MLB','NCAAF','NCAAM','OLATHE'].filter(league=>settings.enabled[league]!==false),controls=`<div class="filters scores-league-filters">${buttons.map(league=>`<button class="filter ${st.filter===league?'active':''}" data-filter="${league}">${league==='NCAAF'?'NCAA Football':league==='NCAAM'?'NCAA Basketball':league==='OLATHE'?'Olathe Schools':league}</button>`).join('')}</div>`;return `${head('Scores',st.updated?`Last updated ${centralTime(st.updated,{hour:'numeric',minute:'2-digit',second:'2-digit',timeZoneName:'short'})}`:'')}<section class="section"><div class="score-date-controls"><button data-date="prev" aria-label="Previous day">‹</button><b>${label}</b><button data-date="next" aria-label="Next day">›</button><button data-date="today">Today</button><input type="date" data-date-picker value="${st.selectedDate}" aria-label="Choose date"></div>${controls}${errors(true)}${chosen?gameGroups(shown,'No games scheduled',true):msg('Select a league above to view scores.')}</section>`};
 const gameCardWithPeriod=game;game=g=>{const html=gameCardWithPeriod(g);if(st.view!=='scores'||g.status!=='live')return html;const detail=String(g.statusDetail||''),period=g.league==='MLB'?(detail.match(/(?:Top|Bottom|Middle|End of)\s*(\d+)(?:st|nd|rd|th)?/i)?.[1]||detail.match(/(\d+)(?:st|nd|rd|th)?\s+inning/i)?.[1]):g.league==='NCAAM'?(detail.match(/(\d+)(?:st|nd)\s+Half/i)?.[0]||detail.match(/\b(OT|\d+OT)\b/i)?.[0]):(detail.match(/\bQ\s*([1-4])\b/i)?.[0]||detail.match(/\b(OT|\d+OT)\b/i)?.[0]);if(!period)return html;const label=g.league==='MLB'?`${Number(period)}${Number(period)%100>=11&&Number(period)%100<=13?'th':({1:'st',2:'nd',3:'rd'}[Number(period)%10]||'th')}`:period.replace(/\s+/g,'');return html.replace('<b class="live">● LIVE</b>',`<b class="live">${safe(label)} · LIVE</b>`);};;
+
+/* Olathe season schedules are returned in one Worker payload; use that payload for Home Up Next. */
+const loadNextFavoriteGamesBase=loadNextFavoriteGames;
+loadNextFavoriteGames=async()=>{
+  await loadNextFavoriteGamesBase();
+  if(st.view!=='home')return;
+  const olatheFavorites=st.favorites.filter(team=>team.league==='OLATHE');
+  if(!olatheFavorites.length)return;
+  try{
+    const host=['localhost','127.0.0.1'].includes(location.hostname)?'http://127.0.0.1:8787':'https://skystation-sports-gateway.cgarrett4.workers.dev';
+    const raw=await endpoint(`${host}/api/olathe/scores?date=${todayKey().replaceAll('-','')}`),games=(raw.games||[]).map(game=>({...game,sport:game.sport||'Football'}));
+    const today=todayKey(),pending=new Set(olatheFavorites.map(team=>olatheFavoriteKey(team.id)));
+    const candidates=games.filter(game=>String(game.status||'').toLowerCase()==='scheduled'&&String(game.date||'').slice(0,10)>=today).sort((a,b)=>(Date.parse(a.date)||Infinity)-(Date.parse(b.date)||Infinity));
+    for(const game of candidates){
+      for(const team of olatheFavorites){
+        const key=olatheFavoriteKey(team.id); if(!pending.has(key))continue;
+        const homeId=olatheFavoriteKey(game.homeTeam?.id),awayId=olatheFavoriteKey(game.awayTeam?.id);
+        if(homeId===key||awayId===key){st.nextGames[team.id]=game;delete st.nextGameErrors[team.id];pending.delete(key)}
+      }
+    }
+  }catch(error){console.error('[SkyStation Sports] OLATHE upcoming games unavailable',error)}
+};
+
+/* Keep Olathe sport metadata visible in favorite Up Next rows and prevent one game from rendering twice. */
+const homeBase=home;
+home=()=>{let html=homeBase();st.favorites.filter(team=>team.league==='OLATHE').forEach(team=>{const name=safe(team.name||team.displayName||''),sport=safe(team.sport||'');if(name&&sport)html=html.replace(`<span>${name}</span><small>OLATHE</small>`,`<span>${name}</span><small>${sport} · Olathe Schools</small>`)});return html};
+const renderBase=render;
+function dedupeOlatheUpNext(){const list=document.querySelector('.favorite-team-list');if(!list)return;const seen=new Set();[...list.children].forEach(row=>{const name=row.querySelector('.favorite-team-top>span')?.textContent?.trim(),team=st.favorites.find(item=>item.league==='OLATHE'&&(item.name||item.displayName)===name),next=team&&st.nextGames[team.id];if(!next?.id)return;if(seen.has(next.id))row.remove();else seen.add(next.id)})}
+render=()=>{renderBase();dedupeOlatheUpNext()};
+if(st.view==='home'&&st.favorites.some(team=>team.league==='OLATHE')){const retry=()=>st.loading?setTimeout(retry,100):loadNextFavoriteGames().then(()=>render());retry()}
+const gameWithOlatheSport=game;
+game=g=>{const html=gameWithOlatheSport(g);return g.league==='OLATHE'&&g.sport?html.replace('<b>Olathe Schools</b>',`<b>Olathe Schools · ${safe(g.sport)}</b>`):html};

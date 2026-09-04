@@ -51,7 +51,7 @@ export default {
     const games = responses.flatMap(data => data.games || []).filter(game => allowedDates.has(String(game.date || '').slice(0, 10)));
     return games.map(game => {
       const mapTeam = team => team?.id === 'OLATHE:ONW:FOOTBALL' ? { ...team, id: 'OLATHE:ONW:FOOTBALL:VARSITY' } : team;
-      return { ...game, homeTeam: mapTeam(game.homeTeam), awayTeam: mapTeam(game.awayTeam), school: mapTeam(game.school) };
+      return { ...game, sport: game.sport || 'Football', homeTeam: mapTeam(game.homeTeam), awayTeam: mapTeam(game.awayTeam), school: mapTeam(game.school) };
     }).filter((game, index, all) => game.id && all.findIndex(item => item.id === game.id) === index);
   },
   standings: async () => [],
